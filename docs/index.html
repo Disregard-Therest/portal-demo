@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <base href="/portal-demo/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <!-- Сам index.html версионировать нечем: он и есть точка входа. Просим
+       не кэшировать его, чтобы ссылки на JS со свежей меткой доезжали. -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <!-- Без viewport мобильный браузер (и вебвью Telegram) верстает страницу
+       как десктопную и разрешает зум — отсюда «уезжающий» жестами экран. -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="description" content="«Портал» — интерактивный прототип платформы самопознания с экспертами.">
+  <meta name="theme-color" content="#000038">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Портал">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png?v=1789494073"/>
+
+  <title>Портал · прототип</title>
+  <link rel="manifest" href="manifest.json?v=1789494073">
+
+  <style>
+    /* Flutter скроллит внутри своего холста, документ при этом стоит на нуле —
+       и вебвью Telegram трактует любой свайп вниз как «свернуть окно».
+       Лечим тем, что делаем страницу формально прокручиваемой на пару
+       пикселей и держим её на 1px (см. скрипт ниже): для вебвью это уже
+       «страница проскроллена», и жест-сворачиватель не срабатывает. */
+    html {
+      height: 100%;
+      overscroll-behavior: none;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      overflow-y: scroll;
+      overscroll-behavior: none;
+      background: #000038; /* цвет до старта Flutter, чтобы не мигало белым */
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    #tg-scroll-pad {
+      height: calc(100vh + 2px);
+      width: 1px;
+      pointer-events: none;
+    }
+    /* dvh учитывает съезжающие панели мобильных браузеров. */
+    @supports (height: 100dvh) {
+      #tg-scroll-pad { height: calc(100dvh + 2px); }
+    }
+    #splash {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #000038;
+      transition: opacity .45s ease;
+      font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    #splash.hidden { opacity: 0; pointer-events: none; }
+    #splash .orb {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffffff 0%, #8fd8ff 16%, rgba(61,123,255,.6) 45%, rgba(61,123,255,0) 72%);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: .9; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+    #splash .name {
+      margin-top: -92px;
+      color: #fff;
+      font-size: 26px;
+      letter-spacing: 8px;
+      padding-left: 8px;
+      font-weight: 700;
+    }
+    #splash .hint { margin-top: 80px; color: #7c80c0; font-size: 13px; }
+  </style>
+
+  <!-- Мини-приложение Telegram: без этого скрипта нельзя ни развернуть окно,
+       ни запретить свайп-вниз. Вне Telegram window.Telegram.WebApp работает
+       как пустышка, поэтому обычный браузер это не ломает. -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    (function () {
+      // ── 1. Держим страницу «слегка проскролленной» ───────────────────────
+      // Работает и во встроенном браузере Telegram, где JS-API нет:
+      // сворачивание там завязано на позицию скролла.
+      function keepScrolled() {
+        if (window.scrollY < 1) window.scrollTo(0, 1);
+      }
+      ['touchstart', 'touchend', 'scroll', 'resize'].forEach(function (e) {
+        window.addEventListener(e, keepScrolled, { passive: true });
+      });
+      window.addEventListener('load', keepScrolled);
+      document.addEventListener('DOMContentLoaded', keepScrolled);
+      keepScrolled();
+
+      // ── 1b. Забираем вертикальный жест себе ─────────────────────────────
+      // Flutter вешает на холст touch-action: none, и вебвью отдаёт свайп
+      // окну Telegram, которое на нём сворачивается. preventDefault помечает
+      // жест обработанным. Только touchmove: на touchstart Flutter
+      // недосчитается событий указателя и перестанет реагировать на касания.
+      window.addEventListener('touchmove', function (e) {
+        if (e.cancelable) e.preventDefault();
+      }, { passive: false, capture: true });
+
+      // ── 2. Мини-приложение Telegram: развернуть и запретить свайп ────────
+      var tg = window.Telegram && window.Telegram.WebApp;
+      if (tg && tg.initData !== undefined && tg.platform && tg.platform !== 'unknown') {
+        try { tg.ready(); } catch (e) {}
+        try { tg.expand(); } catch (e) {}
+        if (typeof tg.disableVerticalSwipes === 'function') {
+          try { tg.disableVerticalSwipes(); } catch (e) {}
+        }
+        try { tg.isVerticalSwipesEnabled = false; } catch (e) {}
+        // Клиенты старее Bot API 7.7 метода не знают: разворачиваем постфактум.
+        if (typeof tg.onEvent === 'function') {
+          tg.onEvent('viewportChanged', function () {
+            if (tg.isExpanded === false) {
+              try { tg.expand(); } catch (e) {}
+            }
+          });
+        }
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div id="splash">
+    <div class="orb"></div>
+    <div class="name">ПОРТАЛ</div>
+    <div class="hint">открываем прототип…</div>
+  </div>
+  <script>
+    function hideSplash() {
+      var s = document.getElementById('splash');
+      if (!s) return;
+      s.classList.add('hidden');
+      setTimeout(function () { s.remove(); }, 600);
+    }
+    window.addEventListener('flutter-first-frame', hideSplash);
+    // Страховка: если событие не пришло, не держим человека на сплэше вечно.
+    setTimeout(hideSplash, 20000);
+  </script>
+  <script src="flutter_bootstrap.js?v=1789494073" async></script>
+
+  <!-- Распорка, из-за которой страница на 2px длиннее экрана: вебвью видит
+       её как «есть куда скроллить». Вне зоны Flutter, на отрисовку не влияет. -->
+  <div id="tg-scroll-pad" aria-hidden="true"></div>
+</body>
+</html>
