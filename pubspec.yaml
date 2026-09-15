@@ -1,0 +1,36 @@
+name: portal_demo
+description: "«Портал» — демо-презентация прототипа платформы самопознания с экспертами."
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Гротеск на интерфейс, сериф — только на крупные заголовки внутри телефона:
+  # он даёт теме «глубину», но в мелком тексте читается хуже.
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/manrope-v20-cyrillic_latin-regular.ttf
+          weight: 400
+        - asset: assets/fonts/manrope-v20-cyrillic_latin-600.ttf
+          weight: 600
+        - asset: assets/fonts/manrope-v20-cyrillic_latin-800.ttf
+          weight: 800
+    - family: Playfair
+      fonts:
+        - asset: assets/fonts/playfair-display-v40-cyrillic_latin-600.ttf
+          weight: 600
