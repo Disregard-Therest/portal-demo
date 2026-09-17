@@ -14,13 +14,20 @@ class PresentationShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Номер шага передаётся параметром, а не читается внутри: const-виджет
+    // Flutter не перестраивает, и шаги с панелью застывали на первом экране,
+    // пока телефон, слушающий состояние сам, уже показывал следующий.
     return Scaffold(
       backgroundColor: AppColors.page,
       body: ListenableBuilder(
         listenable: AppState.instance,
         builder: (context, _) => LayoutBuilder(
-          builder: (context, c) =>
-              c.maxWidth >= 1000 && c.maxHeight >= 620 ? const _Wide() : const _Narrow(),
+          builder: (context, c) {
+            final stepIndex = AppState.instance.stepIndex;
+            return c.maxWidth >= 1000 && c.maxHeight >= 620
+                ? _Wide(stepIndex: stepIndex)
+                : _Narrow(stepIndex: stepIndex);
+          },
         ),
       ),
     );
@@ -30,26 +37,27 @@ class PresentationShell extends StatelessWidget {
 // ── Широкий экран: шаги сверху, телефон слева, пояснения справа ─────────────
 
 class _Wide extends StatelessWidget {
-  const _Wide();
+  const _Wide({required this.stepIndex});
+
+  final int stepIndex;
 
   @override
   Widget build(BuildContext context) {
-    final state = AppState.instance;
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 1280),
         child: Column(
           children: [
             const _Header(),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(28, 6, 120, 6),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(28, 6, 120, 6),
               child: Column(
                 children: [
-                  _StageRow(stage: Stage.entry),
-                  SizedBox(height: 7),
-                  _StageRow(stage: Stage.daily),
-                  SizedBox(height: 7),
-                  _StageRow(stage: Stage.money),
+                  _StageRow(stage: Stage.entry, stepIndex: stepIndex),
+                  const SizedBox(height: 7),
+                  _StageRow(stage: Stage.daily, stepIndex: stepIndex),
+                  const SizedBox(height: 7),
+                  _StageRow(stage: Stage.money, stepIndex: stepIndex),
                 ],
               ),
             ),
@@ -74,12 +82,12 @@ class _Wide extends StatelessWidget {
                       children: [
                         Expanded(
                           child: SingleChildScrollView(
-                            key: ValueKey('panel-${state.stepIndex}'),
-                            child: ExplainPanel(step: state.step, stepIndex: state.stepIndex),
+                            key: ValueKey('panel-$stepIndex'),
+                            child: ExplainPanel(step: demoSteps[stepIndex], stepIndex: stepIndex),
                           ),
                         ),
                         const SizedBox(height: 14),
-                        const _NavButtons(),
+                        _NavButtons(stepIndex: stepIndex),
                         const SizedBox(height: 6),
                         Text('сборка $buildStamp', textAlign: TextAlign.center, style: AppText.muted.copyWith(fontSize: 10.5)),
                       ],
@@ -132,13 +140,13 @@ class _Header extends StatelessWidget {
 
 /// Ряд шагов одного этапа. Цвет кодирует этап, поэтому рядом всегда подпись.
 class _StageRow extends StatelessWidget {
-  const _StageRow({required this.stage});
+  const _StageRow({required this.stage, required this.stepIndex});
 
   final Stage stage;
+  final int stepIndex;
 
   @override
   Widget build(BuildContext context) {
-    final state = AppState.instance;
     final color = stageColor(stage);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -154,7 +162,7 @@ class _StageRow extends StatelessWidget {
             runSpacing: 6,
             children: [
               for (var i = 0; i < demoSteps.length; i++)
-                if (demoSteps[i].stage == stage) _StepChip(index: i, selected: i == state.stepIndex, color: color),
+                if (demoSteps[i].stage == stage) _StepChip(index: i, selected: i == stepIndex, color: color),
             ],
           ),
         ),
@@ -197,15 +205,17 @@ class _StepChip extends StatelessWidget {
 }
 
 class _NavButtons extends StatelessWidget {
-  const _NavButtons();
+  const _NavButtons({required this.stepIndex});
+
+  final int stepIndex;
 
   @override
   Widget build(BuildContext context) {
     final state = AppState.instance;
-    final isLast = state.stepIndex == demoSteps.length - 1;
+    final isLast = stepIndex == demoSteps.length - 1;
     return Row(
       children: [
-        if (state.stepIndex > 0) ...[
+        if (stepIndex > 0) ...[
           Tap(
             onTap: state.prevStep,
             child: Container(
@@ -231,7 +241,7 @@ class _NavButtons extends StatelessWidget {
                 boxShadow: const [BoxShadow(color: Color(0x332D5BFF), blurRadius: 16, offset: Offset(0, 5))],
               ),
               child: Text(
-                isLast ? '↺  Смотреть сначала' : 'Дальше: ${demoSteps[state.stepIndex + 1].navLabel}  →',
+                isLast ? '↺  Смотреть сначала' : 'Дальше: ${demoSteps[stepIndex + 1].navLabel}  →',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15),
               ),
@@ -254,7 +264,10 @@ class _NavButtons extends StatelessWidget {
 enum _Layer { none, explain, steps }
 
 class _Narrow extends StatefulWidget {
-  const _Narrow();
+  const _Narrow({required this.stepIndex});
+
+  /// Не читается напрямую: нужен, чтобы смена шага перестраивала полосу и слои.
+  final int stepIndex;
 
   @override
   State<_Narrow> createState() => _NarrowState();

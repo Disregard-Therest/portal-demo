@@ -76,6 +76,8 @@ void main() {
         await tester.pumpAndSettle();
         expect(state.stepIndex, i);
         expect(tester.takeException(), isNull, reason: 'шаг ${i + 1} · ${demoSteps[i].title}');
+        // Шаги сверху и пояснения обязаны идти за телефоном, а не остаться на первом шаге.
+        expect(find.textContaining('ШАГ ${i + 1} ИЗ ${demoSteps.length}'), findsOneWidget, reason: 'шаг ${i + 1}');
       }
     });
   }
