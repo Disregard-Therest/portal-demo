@@ -9,6 +9,9 @@ import '../widgets/ui_kit.dart';
 import 'explain_panel.dart';
 import 'phone_frame.dart';
 
+/// Admin и next — не телефон, а панель во всю ширину области.
+bool _isPanelScreen(Screen screen) => screen == Screen.admin || screen == Screen.next;
+
 class PresentationShell extends StatelessWidget {
   const PresentationShell({super.key});
 
@@ -55,9 +58,9 @@ class _Wide extends StatelessWidget {
                 children: [
                   _StageRow(stage: Stage.entry, stepIndex: stepIndex),
                   const SizedBox(height: 7),
-                  _StageRow(stage: Stage.daily, stepIndex: stepIndex),
+                  _StageRow(stage: Stage.product, stepIndex: stepIndex),
                   const SizedBox(height: 7),
-                  _StageRow(stage: Stage.money, stepIndex: stepIndex),
+                  _StageRow(stage: Stage.ops, stepIndex: stepIndex),
                 ],
               ),
             ),
@@ -68,10 +71,12 @@ class _Wide extends StatelessWidget {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(32, 12, 32, 20),
-                      child: FittedBox(
-                        fit: BoxFit.contain,
-                        child: SizedBox.fromSize(size: phoneSize, child: const PhoneFrame()),
-                      ),
+                      child: _isPanelScreen(demoSteps[stepIndex].screen)
+                          ? const PanelFrame()
+                          : FittedBox(
+                              fit: BoxFit.contain,
+                              child: SizedBox.fromSize(size: phoneSize, child: const PhoneFrame()),
+                            ),
                     ),
                   ),
                   Container(
@@ -123,7 +128,7 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('«Портал» — платформа самопознания с экспертами', style: AppText.display.copyWith(fontSize: 17)),
+                Text('«Портал» — состав первой версии продукта', style: AppText.display.copyWith(fontSize: 17)),
                 Text(
                   'интерактивный прототип · переключайте шаги сверху или нажимайте прямо в телефоне',
                   style: AppText.muted.copyWith(fontSize: 11.5),
@@ -131,7 +136,7 @@ class _Header extends StatelessWidget {
               ],
             ),
           ),
-          Text('названия, тексты, цены и эксперты — гипотезы для обсуждения', style: AppText.muted.copyWith(fontSize: 11)),
+          Text('названия, тексты и цены — гипотезы для обсуждения', style: AppText.muted.copyWith(fontSize: 11)),
         ],
       ),
     );

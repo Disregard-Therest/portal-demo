@@ -6,8 +6,8 @@ import '../data/models.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui_kit.dart';
 
-class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({super.key});
+class LandingScreen extends StatelessWidget {
+  const LandingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,95 +16,40 @@ class WelcomeScreen extends StatelessWidget {
       children: [
         const Positioned.fill(child: StarField(density: 90)),
         Padding(
-          padding: const EdgeInsets.fromLTRB(26, 20, 26, 26),
+          padding: const EdgeInsets.fromLTRB(26, 20, 26, 22),
           child: Column(
             children: [
               const Spacer(flex: 2),
               Stack(
                 alignment: Alignment.center,
                 children: [
-                  const Orb(size: 210),
+                  const Orb(size: 200),
                   Text(
                     'ПОРТАЛ',
-                    style: AppText.h2.copyWith(fontSize: 34, letterSpacing: 6, fontWeight: FontWeight.w800),
+                    style: AppText.h2.copyWith(fontSize: 32, letterSpacing: 6, fontWeight: FontWeight.w800),
                   ),
                 ],
               ),
               const Spacer(),
-              Text('Шесть систем о тебе —\nв одном профиле', textAlign: TextAlign.center, style: AppText.hero),
-              const SizedBox(height: 14),
+              Text('Узнай свой код', textAlign: TextAlign.center, style: AppText.hero),
+              const SizedBox(height: 12),
               Text(
-                'Астрология, нумерология, Human Design, Ба Цзы, матрица судьбы и таро '
-                'сходятся в один портрет. А мастера помогают с этим жить.',
+                'Дата рождения — и три числа, которые объясняют твой характер, '
+                'твой год и твою силу. Бесплатно, за две минуты.',
                 textAlign: TextAlign.center,
                 style: AppText.p,
               ),
-              const Spacer(flex: 2),
-              PrimaryButton('Узнать свой код', onTap: () => state.open(Screen.intent)),
-              const SizedBox(height: 12),
-              Text('Бесплатно · 2 минуты · без регистрации', style: AppText.small),
-              const SizedBox(height: 14),
-              Tap(
-                onTap: () => state.open(Screen.today),
-                child: Text(
-                  'У меня уже есть профиль',
-                  style: AppText.small.copyWith(color: AppColors.star2, decoration: TextDecoration.underline),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class IntentScreen extends StatelessWidget {
-  const IntentScreen({super.key});
-
-  static const _icons = [
-    Icons.favorite_border_rounded,
-    Icons.trending_up_rounded,
-    Icons.explore_outlined,
-    Icons.bolt_rounded,
-    Icons.family_restroom_rounded,
-    Icons.visibility_outlined,
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final state = AppState.instance;
-    return Column(
-      children: [
-        const TopBar(title: 'Шаг 1 из 2'),
-        Expanded(
-          child: ScreenBody(
-            children: [
-              const SizedBox(height: 6),
-              Text('Что для тебя сейчас\nважнее всего?', style: AppText.hero.copyWith(fontSize: 26)),
-              const SizedBox(height: 10),
-              Text('Можно выбрать несколько. Под это подстроим главную, подсказки и экспертов.', style: AppText.p),
               const SizedBox(height: 22),
-              for (var i = 0; i < intents.length; i++)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _IntentTile(
-                    key: Key('intent-$i'),
-                    label: intents[i],
-                    icon: _icons[i],
-                    selected: state.intents.contains(intents[i]),
-                    onTap: () => state.toggleIntent(intents[i]),
-                  ),
-                ),
+              const _HowStep(number: '1', text: 'Отвечаешь на пять вопросов о себе'),
+              const SizedBox(height: 8),
+              const _HowStep(number: '2', text: 'Получаешь код бесплатно — сразу'),
+              const SizedBox(height: 8),
+              const _HowStep(number: '3', text: 'Возвращаешься каждый день за новым'),
+              const Spacer(flex: 2),
+              PrimaryButton('Узнать свой код', onTap: () => state.open(Screen.survey)),
+              const SizedBox(height: 14),
+              Text('Вас пригласила ${Demo.inviter}', style: AppText.small),
             ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(18, 8, 18, 22),
-          child: PrimaryButton(
-            'Дальше',
-            enabled: state.intents.isNotEmpty,
-            onTap: () => state.open(Screen.birth),
           ),
         ),
       ],
@@ -112,72 +57,61 @@ class IntentScreen extends StatelessWidget {
   }
 }
 
-class _IntentTile extends StatelessWidget {
-  const _IntentTile({super.key, required this.label, required this.icon, required this.selected, required this.onTap});
+class _HowStep extends StatelessWidget {
+  const _HowStep({required this.number, required this.text});
 
-  final String label;
-  final IconData icon;
-  final bool selected;
-  final VoidCallback onTap;
+  final String number;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    return Tap(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.glow.withValues(alpha: 0.18) : AppColors.night2,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: selected ? AppColors.glow : AppColors.nightLine, width: selected ? 1.5 : 1),
+    return Row(
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.glowLight)),
+          child: Text(number, style: AppText.small.copyWith(color: AppColors.glowLight, fontWeight: FontWeight.w700)),
         ),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: selected ? AppColors.glowLight : AppColors.star2),
-            const SizedBox(width: 14),
-            Expanded(child: Text(label, style: AppText.h3)),
-            Icon(
-              selected ? Icons.check_circle_rounded : Icons.circle_outlined,
-              size: 20,
-              color: selected ? AppColors.glowLight : AppColors.star3,
-            ),
-          ],
-        ),
-      ),
+        const SizedBox(width: 12),
+        Expanded(child: Text(text, style: AppText.p)),
+      ],
     );
   }
 }
 
-class BirthScreen extends StatelessWidget {
-  const BirthScreen({super.key});
+class SurveyScreen extends StatelessWidget {
+  const SurveyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = AppState.instance;
     final unknown = state.timeUnknown;
+    // Прогресс — доля заполненных полей: имя, дата и город уже показаны
+    // предзаполненными для демо, поэтому реально интерактивен только запрос.
+    final progress = state.request == null ? 0.75 : 1.0;
     return Column(
       children: [
-        const TopBar(title: 'Шаг 2 из 2'),
+        const TopBar(title: ''),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(18, 0, 18, 4),
+          child: ValueBar(value: progress),
+        ),
         Expanded(
           child: ScreenBody(
             children: [
-              const SizedBox(height: 6),
-              Text('Когда и где\nты родилась?', style: AppText.hero.copyWith(fontSize: 26)),
               const SizedBox(height: 10),
-              Text('Из этих данных считаются все системы. Их видишь только ты.', style: AppText.p),
-              const SizedBox(height: 20),
-              const _Field(label: 'Имя', value: Demo.name, unlocks: []),
-              const _Field(
-                label: 'Дата рождения',
-                value: Demo.birthLabel,
-                unlocks: ['numero', 'matrix', 'bazi', 'astro'],
-              ),
+              Text('Когда, во сколько\nи где ты родилась?', style: AppText.hero.copyWith(fontSize: 25)),
+              const SizedBox(height: 10),
+              Text('Из этих данных считаются все расчёты. Их видишь только ты.', style: AppText.p),
+              const SizedBox(height: 18),
+              const _Field(label: 'Имя', value: Demo.name),
+              const _Field(label: 'Дата рождения', value: Demo.birthLabel),
               _Field(
                 label: 'Время рождения',
                 value: unknown ? 'Не знаю' : Demo.birthTime,
-                unlocks: const ['astro', 'hd', 'bazi'],
-                warning: unknown ? 'Асцендент и Human Design будут приблизительными. Время можно добавить позже.' : null,
+                warning: unknown ? 'Понадобится позже, для астрологии. Сейчас можно не знать.' : null,
               ),
               Tap(
                 key: const Key('time-unknown'),
@@ -197,13 +131,32 @@ class BirthScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const _Field(label: 'Место рождения', value: Demo.birthPlace, unlocks: ['astro', 'hd']),
+              const _Field(label: 'Город рождения', value: Demo.birthPlace),
+              const SectionLabel('Что сейчас важнее всего'),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (var i = 0; i < requestOptions.length; i++)
+                    _RequestChip(
+                      key: Key('request-$i'),
+                      label: requestOptions[i].$1,
+                      icon: requestOptions[i].$2,
+                      selected: state.request == requestOptions[i].$1,
+                      onTap: () => state.selectRequest(requestOptions[i].$1),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
         Padding(
           padding: const EdgeInsets.fromLTRB(18, 8, 18, 22),
-          child: PrimaryButton('Рассчитать мой код', icon: Icons.auto_awesome, onTap: () => state.open(Screen.code)),
+          child: PrimaryButton(
+            'Дальше',
+            enabled: state.request != null,
+            onTap: () => state.open(Screen.code),
+          ),
         ),
       ],
     );
@@ -211,11 +164,10 @@ class BirthScreen extends StatelessWidget {
 }
 
 class _Field extends StatelessWidget {
-  const _Field({required this.label, required this.value, required this.unlocks, this.warning});
+  const _Field({required this.label, required this.value, this.warning});
 
   final String label;
   final String value;
-  final List<String> unlocks;
   final String? warning;
 
   @override
@@ -231,16 +183,6 @@ class _Field extends StatelessWidget {
             Text(label, style: AppText.small),
             const SizedBox(height: 2),
             Text(value, style: AppText.h3.copyWith(fontSize: 16)),
-            if (unlocks.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 5,
-                runSpacing: 5,
-                children: [
-                  for (final id in unlocks) Pill(methodById(id).name, color: methodById(id).color),
-                ],
-              ),
-            ],
             if (warning != null) ...[
               const SizedBox(height: 8),
               Row(
@@ -259,61 +201,77 @@ class _Field extends StatelessWidget {
   }
 }
 
+class _RequestChip extends StatelessWidget {
+  const _RequestChip({super.key, required this.label, required this.icon, required this.selected, required this.onTap});
+
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tap(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.glow.withValues(alpha: 0.18) : AppColors.night2,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: selected ? AppColors.glow : AppColors.nightLine, width: selected ? 1.5 : 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 17, color: selected ? AppColors.glowLight : AppColors.star2),
+            const SizedBox(width: 8),
+            Text(label, style: AppText.h3.copyWith(fontSize: 13.5)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class CodeScreen extends StatelessWidget {
   const CodeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = AppState.instance;
+    final year = DateTime.now().year;
     // Короткая «сборка» кода: без неё результат выглядит заготовленным заранее.
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1200),
       builder: (context, t, _) {
-        if (t < 1) return _Calculating(progress: t);
+        if (t < 1) return const _Calculating();
         return Column(
           children: [
-            TopBar(
-              title: 'Твой код',
-              trailing: Tap(
-                onTap: () => showDemoSnack(context, 'Карточка кода готова к отправке в сторис'),
-                child: const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Icon(Icons.ios_share_rounded, size: 20, color: AppColors.star),
-                ),
-              ),
-            ),
+            const TopBar(title: 'Твой код'),
             Expanded(
               child: ScreenBody(
                 children: [
                   const CodeCard(),
-                  const SectionLabel('Твоя сила'),
-                  const _Trait(
-                    icon: Icons.bolt_rounded,
-                    title: 'Запускаешь новое',
-                    text: 'Число пути 1 и огненная энергия дня рождения: ты первой берёшься за то, на что другие не решаются.',
+                  const SectionLabel('Расшифровка'),
+                  _NumberCard(label: 'ЧИСЛО ПУТИ', value: '${Demo.lifePath}', title: 'Лидерство и старт', text: lifePathText),
+                  _NumberCard(
+                    label: 'АРКАН ЛИЧНОСТИ',
+                    value: '${Demo.arcana}',
+                    title: arcanaName,
+                    text: arcanaText,
                   ),
-                  const _Trait(
-                    icon: Icons.spa_outlined,
-                    title: 'Чувствуешь людей',
-                    text: 'Рыбы и аркан Умеренности: ты тонко улавливаешь настроение и умеешь мирить.',
+                  _NumberCard(
+                    label: 'ЛИЧНЫЙ ГОД $year',
+                    value: '${Demo.personalYear(year)}',
+                    title: 'Год завершения',
+                    text: personalYearText,
                   ),
-                  const _Trait(
-                    icon: Icons.all_inclusive_rounded,
-                    title: 'Долгая энергия',
-                    text: 'Генератор в Human Design: когда дело по душе, ты не устаёшь дольше других.',
-                  ),
-                  const SectionLabel('Где спотыкаешься'),
-                  const _Trait(
-                    icon: Icons.waves_rounded,
-                    title: 'Решения на эмоциях',
-                    text: 'Импульс «сделать сейчас» спорит с эмоциональным авторитетом, которому нужно время.',
-                    warm: true,
-                  ),
-                  const SizedBox(height: 14),
-                  PrimaryButton('Сохранить мой код', onTap: () => state.open(Screen.save)),
+                  const SizedBox(height: 8),
+                  PrimaryButton('Сохранить результат', onTap: () => state.open(Screen.auth)),
                   const SizedBox(height: 10),
-                  Center(child: Text('Полные расшифровки по каждой системе — внутри', style: AppText.small)),
+                  Center(child: Text('Бесплатно и навсегда — платное начинается дальше', style: AppText.small)),
                 ],
               ),
             ),
@@ -325,13 +283,10 @@ class CodeScreen extends StatelessWidget {
 }
 
 class _Calculating extends StatelessWidget {
-  const _Calculating({required this.progress});
-
-  final double progress;
+  const _Calculating();
 
   @override
   Widget build(BuildContext context) {
-    final shown = (progress * methods.length).floor().clamp(0, methods.length - 1);
     return Stack(
       children: [
         const Positioned.fill(child: StarField()),
@@ -341,9 +296,9 @@ class _Calculating extends StatelessWidget {
             children: [
               const Orb(size: 150),
               const SizedBox(height: 18),
-              Text('Сводим системы', style: AppText.h2),
+              Text('Считаем твой код', style: AppText.h2),
               const SizedBox(height: 6),
-              Text(methods[shown].name, style: AppText.p.copyWith(color: methods[shown].color)),
+              Text('по дате рождения', style: AppText.p),
             ],
           ),
         ),
@@ -352,7 +307,7 @@ class _Calculating extends StatelessWidget {
   }
 }
 
-/// Карточка кода — та же, что уходит в сторис.
+/// Карточка кода — верх результата, показывает все три числа разом.
 class CodeCard extends StatelessWidget {
   const CodeCard({super.key, this.compact = false});
 
@@ -360,6 +315,7 @@ class CodeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final year = DateTime.now().year;
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -381,7 +337,9 @@ class CodeCard extends StatelessWidget {
                 spacing: 6,
                 runSpacing: 6,
                 children: [
-                  for (final m in methods.take(5)) _CodeChip(method: m),
+                  _codeChip('Путь ${Demo.lifePath}'),
+                  _codeChip('Аркан ${Demo.arcana}'),
+                  _codeChip('Год ${Demo.personalYear(year)}'),
                 ],
               ),
             ],
@@ -390,59 +348,49 @@ class CodeCard extends StatelessWidget {
       ),
     );
   }
+
+  Widget _codeChip(String text) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.22),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppColors.glowLight.withValues(alpha: 0.55)),
+        ),
+        child: Text(text, style: const TextStyle(fontSize: 11, color: AppColors.star, fontWeight: FontWeight.w600)),
+      );
 }
 
-class _CodeChip extends StatelessWidget {
-  const _CodeChip({required this.method});
+class _NumberCard extends StatelessWidget {
+  const _NumberCard({required this.label, required this.value, required this.title, required this.text});
 
-  final Method method;
-
-  @override
-  Widget build(BuildContext context) {
-    final short = switch (method.id) {
-      'astro' => '☉ ${Demo.sun} · ↑ ${Demo.ascendant}',
-      'numero' => 'Путь ${Demo.lifePath}',
-      'hd' => '${Demo.hdType} ${Demo.hdProfile}',
-      'matrix' => 'Аркан ${Demo.arcana}',
-      'bazi' => Demo.chinese,
-      _ => method.name,
-    };
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.22),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: method.color.withValues(alpha: 0.55)),
-      ),
-      child: Text(short, style: const TextStyle(fontSize: 11, color: AppColors.star, fontWeight: FontWeight.w600)),
-    );
-  }
-}
-
-class _Trait extends StatelessWidget {
-  const _Trait({required this.icon, required this.title, required this.text, this.warm = false});
-
-  final IconData icon;
+  final String label;
+  final String value;
   final String title;
   final String text;
-  final bool warm;
 
   @override
   Widget build(BuildContext context) {
-    final color = warm ? AppColors.gold : AppColors.glowLight;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: NightCard(
-        padding: const EdgeInsets.all(14),
+        accent: AppColors.numero,
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, size: 20, color: color),
+            Container(
+              width: 46,
+              height: 46,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(color: AppColors.numero.withValues(alpha: 0.16), shape: BoxShape.circle),
+              child: Text(value, style: AppText.h2.copyWith(color: AppColors.numero, fontSize: 18)),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(label, style: AppText.label.copyWith(color: AppColors.numero)),
+                  const SizedBox(height: 3),
                   Text(title, style: AppText.h3.copyWith(fontSize: 14)),
                   const SizedBox(height: 3),
                   Text(text, style: AppText.p.copyWith(fontSize: 12.5)),
@@ -456,13 +404,13 @@ class _Trait extends StatelessWidget {
   }
 }
 
-class SaveScreen extends StatelessWidget {
-  const SaveScreen({super.key});
+class AuthScreen extends StatelessWidget {
+  const AuthScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = AppState.instance;
-    void go() => state.open(Screen.today);
+    final sent = state.codeSent;
     return Column(
       children: [
         const TopBar(title: ''),
@@ -474,15 +422,21 @@ class SaveScreen extends StatelessWidget {
               const SizedBox(height: 22),
               Text('Сохрани свой код', style: AppText.hero.copyWith(fontSize: 26)),
               const SizedBox(height: 8),
-              Text(
-                'Чтобы он не потерялся, а каждое утро приходило послание дня и личный прогноз.',
-                style: AppText.p,
-              ),
+              Text('Чтобы результат сохранился и каждый день приходило новое задание.', style: AppText.p),
               const SizedBox(height: 22),
-              _AuthButton(label: 'Продолжить с Telegram', icon: Icons.send_rounded, color: const Color(0xFF2AABEE), onTap: go),
-              _AuthButton(label: 'Продолжить с Apple', icon: Icons.apple, color: Colors.white, dark: true, onTap: go),
-              _AuthButton(label: 'Продолжить с Google', icon: Icons.g_mobiledata_rounded, color: AppColors.night3, onTap: go),
-              _AuthButton(label: 'По номеру телефона', icon: Icons.phone_iphone_rounded, color: AppColors.night2, onTap: go),
+              const _Field(label: 'Номер телефона', value: Demo.phone),
+              if (!sent) ...[
+                const SizedBox(height: 8),
+                PrimaryButton(
+                  'Получить код',
+                  icon: Icons.sms_outlined,
+                  onTap: () => state.update(() => state.codeSent = true),
+                ),
+              ] else ...[
+                const _Field(label: 'Код из SMS', value: '• • • •'),
+                const SizedBox(height: 8),
+                PrimaryButton('Войти', onTap: () => state.open(Screen.today)),
+              ],
               const SizedBox(height: 10),
               Text(
                 'Продолжая, ты соглашаешься с условиями и политикой обработки данных.',
@@ -493,44 +447,6 @@ class SaveScreen extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _AuthButton extends StatelessWidget {
-  const _AuthButton({required this.label, required this.icon, required this.color, required this.onTap, this.dark = false});
-
-  final String label;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-  final bool dark;
-
-  @override
-  Widget build(BuildContext context) {
-    final fg = dark ? AppColors.night : Colors.white;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Tap(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.nightLine),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 20, color: fg),
-              Expanded(
-                child: Text(label, textAlign: TextAlign.center, style: TextStyle(color: fg, fontWeight: FontWeight.w600, fontSize: 14)),
-              ),
-              const SizedBox(width: 20),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

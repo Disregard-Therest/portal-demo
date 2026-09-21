@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../app/daily_screens.dart';
 import '../app/entry_screens.dart';
-import '../app/money_screens.dart';
+import '../app/ops_screens.dart';
+import '../app/product_screens.dart';
 import '../data/app_state.dart';
 import '../data/models.dart';
 import '../theme/app_theme.dart';
@@ -36,6 +36,24 @@ class PhoneFrame extends StatelessWidget {
   }
 }
 
+/// Режим без рамки телефона — для admin и next: это не приложение на экране
+/// человека, а панель, которая работает в браузере. Форма окна вместо формы
+/// телефона, но палитра и компоненты внутри те же.
+class PanelFrame extends StatelessWidget {
+  const PanelFrame({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(20),
+      child: DecoratedBox(
+        decoration: BoxDecoration(border: Border.all(color: AppColors.nightLine)),
+        child: const AppViewport(),
+      ),
+    );
+  }
+}
+
 /// Само приложение без корпуса. На телефоне показывается во весь экран:
 /// рамка внутри настоящего телефона только отнимает место.
 class AppViewport extends StatelessWidget {
@@ -54,24 +72,18 @@ class AppViewport extends StatelessWidget {
           // Без const: экраны читают состояние напрямую, и константный
           // экземпляр Flutter не перестроил бы при его изменении.
           final content = switch (state.screen) {
-            Screen.welcome => WelcomeScreen(),
-            Screen.intent => IntentScreen(),
-            Screen.birth => BirthScreen(),
+            Screen.landing => LandingScreen(),
+            Screen.survey => SurveyScreen(),
             Screen.code => CodeScreen(),
-            Screen.save => SaveScreen(),
+            Screen.auth => AuthScreen(),
             Screen.today => TodayScreen(),
-            Screen.methods => MethodsScreen(),
             Screen.reading => ReadingScreen(),
-            Screen.match => MatchScreen(),
-            Screen.guide => GuideScreen(),
-            Screen.calendar => CalendarScreen(),
-            Screen.experts => ExpertsScreen(),
-            Screen.expert => ExpertScreen(),
-            Screen.course => CourseScreen(),
-            Screen.consult => ConsultScreen(),
+            Screen.chat => ChatScreen(),
             Screen.plus => PlusScreen(),
-            Screen.profile => ProfileScreen(),
-            Screen.cabinet => CabinetScreen(),
+            Screen.invite => InviteScreen(),
+            Screen.push => PushScreen(),
+            Screen.admin => AdminScreen(),
+            Screen.next => NextScreen(),
           };
           final tab = state.tab;
           return ScaffoldMessenger(
@@ -132,10 +144,8 @@ class _TabBar extends StatelessWidget {
 
   static const _items = [
     (AppTab.today, Screen.today, Icons.wb_twilight_rounded, 'Сегодня'),
-    (AppTab.methods, Screen.methods, Icons.auto_awesome_outlined, 'Методики'),
-    (AppTab.guide, Screen.guide, Icons.blur_on_rounded, 'Проводник'),
-    (AppTab.experts, Screen.experts, Icons.people_outline_rounded, 'Эксперты'),
-    (AppTab.profile, Screen.profile, Icons.person_outline_rounded, 'Профиль'),
+    (AppTab.reading, Screen.reading, Icons.menu_book_outlined, 'Расшифровка'),
+    (AppTab.chat, Screen.chat, Icons.chat_bubble_outline_rounded, 'Чат'),
   ];
 
   @override

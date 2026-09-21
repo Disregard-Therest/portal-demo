@@ -82,56 +82,60 @@ void main() {
     });
   }
 
-  testWidgets('вход: без запроса дальше не пускает, дальше — код и главная', (tester) async {
+  testWidgets('вход: без запроса дальше не пускает, дальше — код, вход и главная', (tester) async {
     await pump(tester, const Size(1600, 1000));
 
     await tap(tester, find.text('Узнать свой код'));
-    expect(state.screen, Screen.intent);
+    expect(state.screen, Screen.survey);
     expect(state.stepIndex, 1, reason: 'панель догоняет экран');
 
     await tap(tester, find.text('Дальше'));
-    expect(state.screen, Screen.intent, reason: 'без выбранного запроса кнопка неактивна');
+    expect(state.screen, Screen.survey, reason: 'без выбранного запроса кнопка неактивна');
 
-    await tap(tester, find.byKey(const Key('intent-0')));
+    await tap(tester, find.byKey(const Key('request-0')));
     await tap(tester, find.text('Дальше'));
-    expect(state.screen, Screen.birth);
-
-    await tap(tester, find.byKey(const Key('time-unknown')));
-    expect(find.textContaining('будут приблизительными'), findsOneWidget);
-
-    await tap(tester, find.text('Рассчитать мой код'));
     expect(state.screen, Screen.code);
-    await tap(tester, find.text('Сохранить мой код'));
-    expect(state.screen, Screen.save);
 
-    await tap(tester, find.text('Продолжить с Telegram'));
+    await tap(tester, find.text('Сохранить результат'));
+    expect(state.screen, Screen.auth);
+
+    await tap(tester, find.text('Получить код'));
+    expect(find.text('Войти'), findsOneWidget);
+
+    await tap(tester, find.text('Войти'));
     expect(state.screen, Screen.today);
     expect(find.byKey(const Key('tab-today')), findsOneWidget, reason: 'после входа есть нижнее меню');
   });
 
-  testWidgets('проводник отвечает по одному вопросу и считает лимит', (tester) async {
+  testWidgets('анкета: время рождения можно отметить как неизвестное', (tester) async {
     await pump(tester, const Size(1600, 1000));
-    state.goToStep(demoSteps.indexWhere((s) => s.screen == Screen.guide));
+    state.goToStep(demoSteps.indexWhere((s) => s.screen == Screen.survey));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('осталось 3 из 3'), findsOneWidget);
-    await tap(tester, find.byKey(const Key('guide-q-0')));
-    expect(state.guideAnswered, 1);
-    expect(find.textContaining('осталось 2 из 3'), findsOneWidget);
+    await tap(tester, find.byKey(const Key('time-unknown')));
+    expect(find.textContaining('Понадобится позже'), findsOneWidget);
   });
 
-  testWidgets('консультация: без времени не оплатить, с временем — запись', (tester) async {
+  testWidgets('чат отвечает по одному вопросу и считает недельный лимит', (tester) async {
     await pump(tester, const Size(1600, 1000));
-    state.goToStep(demoSteps.indexWhere((s) => s.screen == Screen.consult));
+    state.goToStep(demoSteps.indexWhere((s) => s.screen == Screen.chat));
     await tester.pumpAndSettle();
 
-    await tap(tester, find.text('Выбери время'));
-    expect(state.booked, isFalse);
+    expect(find.textContaining('Осталось 2 из 3'), findsOneWidget);
+    await tap(tester, find.byKey(const Key('chat-q-1')));
+    expect(state.chatAnswered, 2);
+    expect(find.textContaining('Осталось 1 из 3'), findsOneWidget);
+  });
 
-    await tap(tester, find.byKey(const Key('slot-1')));
-    await tap(tester, find.text('Оплатить по СБП'));
-    expect(state.booked, isTrue);
-    expect(find.text('Ты записана'), findsOneWidget);
+  testWidgets('главная: задание дня отмечается', (tester) async {
+    await pump(tester, const Size(1600, 1000));
+    state.goToStep(demoSteps.indexWhere((s) => s.screen == Screen.today));
+    await tester.pumpAndSettle();
+
+    expect(state.taskDone, isFalse);
+    await tap(tester, find.byKey(const Key('daily-task')));
+    expect(state.taskDone, isTrue);
+    expect(find.text('готово'), findsOneWidget);
   });
 
   testWidgets('подписка закрывается туда, откуда открыта', (tester) async {
@@ -139,10 +143,36 @@ void main() {
     state.goToStep(demoSteps.indexWhere((s) => s.screen == Screen.reading));
     await tester.pumpAndSettle();
 
-    await tap(tester, find.text('Открыть расшифровку · 490 ₽'));
+    await tap(tester, find.text('Открыть полностью · Портал+'));
     expect(state.screen, Screen.plus);
     await tap(tester, find.byKey(const Key('plus-close')));
     expect(state.screen, Screen.reading);
+  });
+
+  testWidgets('уведомления: время напоминания переключается', (tester) async {
+    await pump(tester, const Size(1600, 1000));
+    state.goToStep(demoSteps.indexWhere((s) => s.screen == Screen.push));
+    await tester.pumpAndSettle();
+
+    expect(state.pushTimeIndex, 0);
+    await tap(tester, find.byKey(const Key('push-time-2')));
+    expect(state.pushTimeIndex, 2);
+  });
+
+  testWidgets('админка и «что дальше» открываются без рамки телефона', (tester) async {
+    await pump(tester, const Size(1600, 1000));
+
+    state.goToStep(demoSteps.indexWhere((s) => s.screen == Screen.admin));
+    await tester.pumpAndSettle();
+    expect(find.byType(PhoneFrame), findsNothing);
+    expect(find.byType(PanelFrame), findsOneWidget);
+    expect(find.text('Задания месяца · сентябрь'), findsOneWidget);
+
+    state.goToStep(demoSteps.indexWhere((s) => s.screen == Screen.next));
+    await tester.pumpAndSettle();
+    expect(find.byType(PhoneFrame), findsNothing);
+    expect(find.byType(PanelFrame), findsOneWidget);
+    expect(find.text('Кабинет партнёра'), findsOneWidget);
   });
 
   testWidgets('телефон: список шагов и пояснения открываются слоями', (tester) async {
@@ -152,23 +182,21 @@ void main() {
     expect(state.stepIndex, 1);
 
     await tap(tester, find.byKey(const Key('narrow-steps')));
-    await tap(tester, find.byKey(const Key('narrow-step-11')));
-    expect(state.screen, Screen.experts);
+    await tap(tester, find.byKey(const Key('narrow-step-8')));
+    expect(state.screen, Screen.invite);
 
     await tap(tester, find.byKey(const Key('narrow-explain')));
     expect(find.text('ОБСУДИТЬ'), findsOneWidget);
     await tap(tester, find.text('Дальше →'));
-    expect(state.screen, Screen.expert);
+    expect(state.screen, Screen.push);
   });
 
   test('расчёты по дате примера', () {
-    expect(AstroMath.sunSign(Demo.birth), 'Рыбы');
     expect(AstroMath.lifePath(Demo.birth), 1); // 1+4+3+1+9+9+1 = 28 → 10 → 1
     expect(AstroMath.personalArcana(Demo.birth), 14);
-    expect(AstroMath.chineseYear(Demo.birth), 'Металл · Коза');
     expect(AstroMath.personalYear(Demo.birth, 2026), 9);
-    expect(AstroMath.sunSign(DateTime(1989, 7, 22)), 'Рак');
-    expect(AstroMath.sunSign(DateTime(2000, 1, 5)), 'Козерог');
     expect(AstroMath.personalArcana(DateTime(2000, 1, 29)), 7);
+    expect(AstroMath.personalMonth(Demo.birth, DateTime(2026, 4, 1)), 4); // 9+4=13→4
+    expect(AstroMath.personalDay(Demo.birth, DateTime(2026, 4, 1)), 5); // 4+1=5
   });
 }

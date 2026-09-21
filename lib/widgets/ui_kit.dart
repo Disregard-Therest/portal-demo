@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../data/app_state.dart';
-import '../data/models.dart';
 import '../theme/app_theme.dart';
 
 /// Светящийся шар из логотипа старого «Портала». Пульсирует, если [animate].
@@ -426,28 +425,6 @@ class Avatar extends StatelessWidget {
         initials,
         style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: size * 0.32),
       ),
-    );
-  }
-}
-
-/// Иконка системы в цветном кружке.
-class MethodBadge extends StatelessWidget {
-  const MethodBadge({super.key, required this.method, this.size = 40});
-
-  final Method method;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: method.color.withValues(alpha: 0.16),
-        border: Border.all(color: method.color.withValues(alpha: 0.4)),
-      ),
-      child: Icon(method.icon, size: size * 0.5, color: method.color),
     );
   }
 }

@@ -1,32 +1,24 @@
-import 'package:flutter/material.dart';
-
 /// Экран внутри телефона. Один экран — один шаг презентации.
 enum Screen {
-  welcome,
-  intent,
-  birth,
+  landing,
+  survey,
   code,
-  save,
+  auth,
   today,
-  methods,
   reading,
-  match,
-  guide,
-  calendar,
-  experts,
-  expert,
-  course,
-  consult,
+  chat,
   plus,
-  profile,
-  cabinet,
+  invite,
+  push,
+  admin,
+  next,
 }
 
 /// Вкладки нижнего меню приложения.
-enum AppTab { today, methods, guide, experts, profile }
+enum AppTab { today, reading, chat }
 
 /// Этап пути пользователя — ряд бейджей в шапке презентации.
-enum Stage { entry, daily, money }
+enum Stage { entry, product, ops }
 
 class DemoStep {
   const DemoStep({
@@ -58,64 +50,10 @@ class DemoStep {
   final List<String> discuss;
 }
 
-class Method {
-  const Method({
-    required this.id,
-    required this.name,
-    required this.color,
-    required this.icon,
-    required this.answers,
-    required this.result,
-    required this.needs,
-  });
-
-  final String id;
-  final String name;
-  final Color color;
-  final IconData icon;
-
-  /// На какой вопрос человека отвечает система.
-  final String answers;
-
-  /// Результат пользователя-примера — короткой строкой.
-  final String result;
-
-  /// Какие данные рождения нужны.
-  final String needs;
-}
-
-class Expert {
-  const Expert({
-    required this.name,
-    required this.role,
-    required this.methodIds,
-    required this.rating,
-    required this.reviews,
-    required this.price,
-    required this.initials,
-    required this.color,
-    required this.years,
-    required this.students,
-  });
-
-  final String name;
-  final String role;
-  final List<String> methodIds;
-  final double rating;
-  final int reviews;
-  final int price;
-  final String initials;
-  final Color color;
-  final int years;
-  final int students;
-}
-
+/// Вопрос-ответ в чате с ИИ-проводником.
 class ChatExchange {
-  const ChatExchange({required this.question, required this.answer, this.expertHint});
+  const ChatExchange({required this.question, required this.answer});
 
   final String question;
   final String answer;
-
-  /// Подсказка «разобрать глубже с экспертом» под ответом.
-  final String? expertHint;
 }

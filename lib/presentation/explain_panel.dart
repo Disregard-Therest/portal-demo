@@ -123,6 +123,6 @@ class ExplainPanel extends StatelessWidget {
 
 Color stageColor(Stage stage) => switch (stage) {
       Stage.entry => AppColors.stage1,
-      Stage.daily => AppColors.stage2,
-      Stage.money => AppColors.stage3,
+      Stage.product => AppColors.stage2,
+      Stage.ops => AppColors.stage3,
     };
